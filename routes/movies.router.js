@@ -1,4 +1,5 @@
 const MoviesService = require("../services/movies.service");
+const express = require("express");
 const router = express.Router();
 const service = new MoviesService();
 const validatorHandler = require("../middlewares/validator.handler");
@@ -12,10 +13,10 @@ const {
   getByRankingSchema,
 } = require("../schemas/movies.schema");
 
-router.get("/", validatorHandler(), async (req, res, next) => {
+router.get("/", async (req, res, next) => {
   try {
     const movies = await service.find();
-    res.json(/**db movies */);
+    res.json(movies);
   } catch (error) {
     next(error);
   }
@@ -28,7 +29,7 @@ router.get(
     try {
       const { genre } = req.params;
       const movies = await service.filterByGenre(genre);
-      res.json(/**db movies */);
+      res.json(movies);
     } catch (error) {
       next(error);
     }
@@ -42,7 +43,8 @@ router.get(
     try {
       const { title } = req.params;
       const movie = await service.findByTitle(title);
-      res.json(/**db movies */);
+      console.log(movie);
+      res.json(movie);
     } catch (error) {
       next(error);
     }
@@ -56,7 +58,7 @@ router.get(
     try {
       const { year } = req.params;
       const movies = await service.filterByYear(year);
-      res.json(/**db movies */);
+      res.json(movies);
     } catch (error) {
       next(error);
     }
@@ -70,7 +72,7 @@ router.get(
     try {
       const { ranking } = req.params;
       const movies = await service.filterByRanking(ranking);
-      res.json(/**db movies */);
+      res.json(movies);
     } catch (error) {
       next(error);
     }
@@ -84,8 +86,7 @@ router.post(
     try {
       const body = req.body;
       const newMovie = await service.add(body);
-      // res.json(/**db movies */)
-      // añade una peli
+      res.json(newMovie);
     } catch (error) {
       next(error);
     }
@@ -101,8 +102,7 @@ router.patch(
       const { id } = req.params;
       const body = req.body;
       const movie = await service.update(id, body);
-      // res.json(/**db movies */)
-      // modifica una peli
+      res.json(movie);
     } catch (error) {
       next(error);
     }
@@ -118,7 +118,7 @@ router.delete(
       const movie = await service.delete(id);
       res.json({
         message: "deleted",
-        id,
+        movie,
       });
     } catch (error) {
       next(error);

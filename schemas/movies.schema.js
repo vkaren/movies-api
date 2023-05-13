@@ -1,9 +1,9 @@
 const Joi = require("joi");
 
 const id = Joi.string().uuid();
-const title = Joi.string().alphanum();
-const genre = Joi.string().alphanum();
-const year = Joi.string().integer();
+const title = Joi.string();
+const genre = Joi.string();
+const year = Joi.number().integer().min(1895).max(2024);
 const ranking = Joi.number().integer();
 const poster = Joi.string().uri();
 
@@ -11,7 +11,7 @@ const addMovieSchema = Joi.object({
   title: title.required(),
   genre: genre.required(),
   year: year.required(),
-  ranking: ranking.required(),
+  ranking: ranking,
   poster: poster.required(),
 });
 

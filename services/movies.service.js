@@ -25,6 +25,7 @@ class MoviesService {
   }
 
   async findByTitle(title) {
+    console.log(title, this.movies);
     return this.movies.find((movie) => movie.title === title);
   }
 
@@ -33,7 +34,7 @@ class MoviesService {
   }
 
   async filterByYear(year) {
-    return this.movies.filter((movie) => movie.year === year);
+    return this.movies.filter((movie) => movie.year == year);
   }
 
   async filterByRanking(ranking) {

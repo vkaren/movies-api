@@ -1,4 +1,5 @@
 const express = require("express");
+const cors = require("cors");
 const app = express();
 const port = 3000;
 const routerApi = require("./routes");
@@ -7,6 +8,9 @@ const {
   errorHandler,
   boomErrorHandler,
 } = require("./middlewares/error.handler");
+
+app.use(express.json());
+app.use(cors());
 
 app.get("/", (req, res) => {
   res.send("Hola mi server en Express");
