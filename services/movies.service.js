@@ -1,6 +1,10 @@
+const pool = require("../libs/postgres.pool");
+
 class MoviesService {
   constructor() {
     this.movies = [];
+    this.pool = pool;
+    this.pool.on("error", (err) => console.error(err));
   }
 
   async add({ title, genre, year, ranking = 0 }) {
@@ -21,7 +25,10 @@ class MoviesService {
   }
 
   async find() {
-    return this.movies;
+    const query = "SELECT * FROM movies";
+    const res = await this.pool.query(query);
+    return res.rows;
+    // return this.movies;
   }
 
   async findByTitle(title) {
