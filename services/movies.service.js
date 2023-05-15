@@ -1,5 +1,6 @@
 const pool = require("../libs/postgres.pool");
 const sequelize = require("../libs/sequelize");
+const { models } = require("../libs/sequelize");
 
 class MoviesService {
   constructor() {
@@ -26,9 +27,9 @@ class MoviesService {
   }
 
   async find() {
-    const query = "SELECT * FROM movies";
-    const [data] = await sequelize.query(query); // this.pool.query(query);
-    return data; //res.rows;
+    // const query = "SELECT * FROM movies";
+    const res = await models.Movies.findAll(); //sequelize.query(query); // this.pool.query(query);
+    return res; //res.rows;
     // return this.movies;
   }
 
