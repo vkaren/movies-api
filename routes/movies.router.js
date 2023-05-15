@@ -23,20 +23,6 @@ router.get("/", async (req, res, next) => {
 });
 
 router.get(
-  "/genre/:genre",
-  validatorHandler(getByGenreSchema, "params"),
-  async (req, res, next) => {
-    try {
-      const { genre } = req.params;
-      const movies = await service.filterByGenre(genre);
-      res.json(movies);
-    } catch (error) {
-      next(error);
-    }
-  }
-);
-
-router.get(
   "/title/:title",
   validatorHandler(getByTitleSchema, "params"),
   async (req, res, next) => {
@@ -52,12 +38,32 @@ router.get(
 );
 
 router.get(
+  "/genre/:genre",
+  validatorHandler(getByGenreSchema, "params"),
+  async (req, res, next) => {
+    try {
+      const { genre } = req.params;
+      const movies = await service.filter(
+        { attribute: "genre", value: genre },
+        req.query
+      );
+      res.json(movies);
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+router.get(
   "/year/:year",
   validatorHandler(getByYearSchema, "params"),
   async (req, res, next) => {
     try {
       const { year } = req.params;
-      const movies = await service.filterByYear(year);
+      const movies = await service.filter(
+        { attribute: "year", value: year },
+        req.query
+      );
       res.json(movies);
     } catch (error) {
       next(error);
@@ -71,7 +77,13 @@ router.get(
   async (req, res, next) => {
     try {
       const { ranking } = req.params;
-      const movies = await service.filterByRanking(ranking);
+      const movies = await service.filter(
+        {
+          attribute: "ranking",
+          value: ranking,
+        },
+        req.query
+      );
       res.json(movies);
     } catch (error) {
       next(error);
