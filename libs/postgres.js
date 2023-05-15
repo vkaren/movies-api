@@ -1,9 +1,10 @@
 const { Client } = require("pg");
+const config = require("../config/config");
 
-const conString = process.env.ELEPHANTSQL_URL  || "postgres://postgres:5432@localhost/postgres";
+const URI = encodeURI(config.uri);
 
 async function getConnection() {
-  const client = new Client(conString);
+  const client = new Client(URI);
   await client.connect();
   return client;
 }

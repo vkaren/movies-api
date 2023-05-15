@@ -1,7 +1,7 @@
 const { Pool } = require("pg");
+const config = require("../config/config");
 
-const conString =
-  process.env.ELEPHANTSQL_URL || "postgres://postgres:5432@localhost/postgres";
-const pool = new Pool(conString);
+const URI = encodeURI(config.uri);
+const pool = new Pool({ connectionString: URI });
 
 module.exports = pool;
