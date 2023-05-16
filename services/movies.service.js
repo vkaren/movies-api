@@ -11,9 +11,9 @@ class MoviesService {
   }
 
   async add({ title, genre, year, ranking = 0, poster }) {
-    const movieData = { id: 1, title, genre, year, ranking, poster };
-    console.log(movieData);
+    const movieData = { title, genre, year, ranking, poster };
     const movie = await models.Movies.create(movieData);
+    console.log(movie);
     return movie;
   }
 
@@ -53,12 +53,14 @@ class MoviesService {
   }
 
   async delete(id) {
-    const movie = await models.Movies.findOne(id);
+    const movie = await models.Movies.findByPk(id);
+    let movieDeleted;
     if (!movie) {
       throw boom.notFound("movie not found");
     }
+    movieDeleted = movie;
     await movie.destroy();
-    return { id };
+    return movieDeleted;
   }
 }
 

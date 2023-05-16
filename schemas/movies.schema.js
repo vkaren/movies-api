@@ -1,6 +1,6 @@
 const Joi = require("joi");
 
-const id = Joi.string();
+const id = Joi.number().integer();
 const title = Joi.string();
 const genre = Joi.string();
 const year = Joi.number().integer().min(1895).max(2024);
