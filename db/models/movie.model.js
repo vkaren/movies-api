@@ -15,7 +15,7 @@ const MovieSchema = {
   },
   genre: {
     allowNull: false,
-    type: DataTypes.STRING,
+    type: DataTypes.ARRAY,
   },
   year: {
     allowNull: false,

@@ -10,10 +10,10 @@ class MoviesService {
     this.pool.on("error", (err) => console.error(err));
   }
 
-  async add({ title, genre, year, ranking = 0, poster }) {
+  async create({ title, genre, year, ranking = 0, poster }) {
     const movieData = { title, genre, year, ranking, poster };
     const movie = await models.Movies.create(movieData);
-    console.log(movie);
+
     return movie;
   }
 

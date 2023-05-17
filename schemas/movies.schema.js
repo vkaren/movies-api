@@ -2,7 +2,7 @@ const Joi = require("joi");
 
 const id = Joi.number().integer();
 const title = Joi.string();
-const genre = Joi.string();
+const genre = Joi.array();
 const year = Joi.number().integer().min(1895).max(2024);
 const ranking = Joi.number().integer();
 const poster = Joi.string().uri();
