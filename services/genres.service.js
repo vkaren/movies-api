@@ -39,7 +39,15 @@ class GenresService {
 
   async find() {
     const res = await models.Genre.findAll({
-      include: ["movies"],
+      include: [
+        {
+          model: models.Movie,
+          as: "movies",
+          through: {
+            attributes: [],
+          },
+        },
+      ],
     });
     return res;
   }
