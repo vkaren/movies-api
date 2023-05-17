@@ -83,42 +83,42 @@ router.get(
 //   }
 // );
 
-router.get(
-  "/year/:year",
-  validatorHandler(getByYearSchema, "params"),
-  async (req, res, next) => {
-    try {
-      const { year } = req.params;
-      const movies = await service.filter(
-        { attribute: "year", value: year },
-        req.query
-      );
-      res.json(movies);
-    } catch (error) {
-      next(error);
-    }
-  }
-);
+// router.get(
+//   "/year/:year",
+//   validatorHandler(getByYearSchema, "params"),
+//   async (req, res, next) => {
+//     try {
+//       const { year } = req.params;
+//       const movies = await service.filter(
+//         { attribute: "year", value: year },
+//         req.query
+//       );
+//       res.json(movies);
+//     } catch (error) {
+//       next(error);
+//     }
+//   }
+// );
 
-router.get(
-  "/ranking/:ranking",
-  validatorHandler(getByRankingSchema, "params"),
-  async (req, res, next) => {
-    try {
-      const { ranking } = req.params;
-      const movies = await service.filter(
-        {
-          attribute: "ranking",
-          value: ranking,
-        },
-        req.query
-      );
-      res.json(movies);
-    } catch (error) {
-      next(error);
-    }
-  }
-);
+// router.get(
+//   "/ranking/:ranking",
+//   validatorHandler(getByRankingSchema, "params"),
+//   async (req, res, next) => {
+//     try {
+//       const { ranking } = req.params;
+//       const movies = await service.filter(
+//         {
+//           attribute: "ranking",
+//           value: ranking,
+//         },
+//         req.query
+//       );
+//       res.json(movies);
+//     } catch (error) {
+//       next(error);
+//     }
+//   }
+// );
 
 router.delete(
   "/:id",

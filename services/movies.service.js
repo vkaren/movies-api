@@ -12,7 +12,22 @@ class MoviesService {
   }
 
   async create({ title, genres, year, ranking = 0, poster = "" }) {
-    const movieData = { title, genres, year, ranking, poster };
+    const [yearId] = await models.Year.findOrCreate({
+      where: { year },
+      defaults: {
+        year,
+      },
+    });
+
+    const movieData = {
+      title,
+      genres,
+      ranking,
+      poster,
+      year,
+      yearId: yearId.dataValues.id,
+    };
+
     const movie = await models.Movie.create(movieData);
 
     genres.forEach(async (genre) => {
@@ -24,7 +39,7 @@ class MoviesService {
           },
         });
 
-        const addedMovie = await genresService.addMovie({
+        await genresService.addMovie({
           genreId: genreId.dataValues.id,
           movieId: movie.id,
         });

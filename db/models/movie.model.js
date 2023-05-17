@@ -1,4 +1,6 @@
 const { Model, DataTypes } = require("sequelize");
+const { YEAR_TABLE } = require("./year.model");
+
 const MOVIE_TABLE = "movies";
 
 const MovieSchema = {
@@ -29,11 +31,22 @@ const MovieSchema = {
     allowNull: false,
     type: DataTypes.STRING,
   },
+  yearId: {
+    field: "year_id",
+    allowNull: false,
+    type: DataTypes.INTEGER,
+    references: {
+      model: YEAR_TABLE,
+      key: "id",
+    },
+    onUpdate: "CASCADE",
+    onDelete: "SET NULL",
+  },
 };
 
 class Movie extends Model {
-  static associate() {
-    // models
+  static associate(models) {
+    this.belongsTo(models.Year, { foreignKey: "id", as: "yearModel" });
   }
 
   static config(sequelize) {

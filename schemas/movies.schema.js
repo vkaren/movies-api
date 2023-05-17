@@ -6,6 +6,7 @@ const genres = Joi.array();
 const year = Joi.number().integer().min(1895).max(2024);
 const ranking = Joi.number().integer();
 const poster = Joi.string().uri();
+const yearId = Joi.number().integer();
 
 const addMovieSchema = Joi.object({
   title: title.required(),
@@ -13,6 +14,7 @@ const addMovieSchema = Joi.object({
   year: year.required(),
   ranking,
   poster,
+  yearId,
 });
 
 const updateMovieSchema = Joi.object({
