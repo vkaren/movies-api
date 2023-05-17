@@ -1,5 +1,5 @@
 const { Model, DataTypes } = require("sequelize");
-const GENRE_TABLE = "movies";
+const GENRE_TABLE = "genres";
 
 const GenreSchema = {
   id: {
@@ -13,22 +13,11 @@ const GenreSchema = {
     type: DataTypes.STRING,
     unique: true,
   },
-  movieId: {
-    field: "movie_id",
-    allowNull: false,
-    type: DataTypes.INTEGER,
-    references: {
-      model: GENRE_TABLE,
-      key: "id",
-    },
-    onUpdate: "CASCADE",
-    onDelete: "SET NULL",
-  },
 };
 
-class Genres extends Model {
+class Genre extends Model {
   static associate(models) {
-    this.belongsToMany(models.Movies, {
+    this.belongsToMany(models.Movie, {
       as: "movies",
       through: models.GenreMovie,
       foreignKey: "genreId",
@@ -40,10 +29,10 @@ class Genres extends Model {
     return {
       sequelize,
       tableName: GENRE_TABLE,
-      modelName: "Genres",
+      modelName: "Genre",
       timestamps: false,
     };
   }
 }
 
-module.exports = { GENRE_TABLE, GenreSchema, Genres };
+module.exports = { GENRE_TABLE, GenreSchema, Genre };

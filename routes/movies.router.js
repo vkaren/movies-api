@@ -22,14 +22,29 @@ router.get("/", async (req, res, next) => {
   }
 });
 
-router.get(
-  "/title/:title",
-  validatorHandler(getByTitleSchema, "params"),
+router.post(
+  "/",
+  validatorHandler(addMovieSchema, "body"),
   async (req, res, next) => {
     try {
-      const { title } = req.params;
-      const movie = await service.findByTitle(title);
-      console.log(movie);
+      const body = req.body;
+      const newMovie = await service.create(body);
+      res.json(newMovie);
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+router.patch(
+  "/:id",
+  validatorHandler(getByIdSchema, "params"),
+  validatorHandler(updateMovieSchema, "body"),
+  async (req, res, next) => {
+    try {
+      const { id } = req.params;
+      const body = req.body;
+      const movie = await service.update(id, body);
       res.json(movie);
     } catch (error) {
       next(error);
@@ -38,21 +53,35 @@ router.get(
 );
 
 router.get(
-  "/genre/:genre",
-  validatorHandler(getByGenreSchema, "params"),
+  "/title/:title",
+  validatorHandler(getByTitleSchema, "params"),
   async (req, res, next) => {
     try {
-      const { genre } = req.params;
-      const movies = await service.filter(
-        { attribute: "genre", value: genre },
-        req.query
-      );
-      res.json(movies);
+      const { title } = req.params;
+      const movie = await service.findByTitle(title);
+      res.json(movie);
     } catch (error) {
       next(error);
     }
   }
 );
+
+// router.get(
+//   "/genre/:genre",
+//   validatorHandler(getByGenreSchema, "params"),
+//   async (req, res, next) => {
+//     try {
+//       const { genre } = req.params;
+//       const movies = await service.filter(
+//         { attribute: "genre", value: genre },
+//         req.query
+//       );
+//       res.json(movies);
+//     } catch (error) {
+//       next(error);
+//     }
+//   }
+// );
 
 router.get(
   "/year/:year",
@@ -91,38 +120,8 @@ router.get(
   }
 );
 
-router.post(
-  "/movie",
-  validatorHandler(addMovieSchema, "body"),
-  async (req, res, next) => {
-    try {
-      const body = req.body;
-      const newMovie = await service.add(body);
-      res.json(newMovie);
-    } catch (error) {
-      next(error);
-    }
-  }
-);
-
-router.patch(
-  "/movie/:id",
-  validatorHandler(getByIdSchema, "params"),
-  validatorHandler(updateMovieSchema, "body"),
-  async (req, res, next) => {
-    try {
-      const { id } = req.params;
-      const body = req.body;
-      const movie = await service.update(id, body);
-      res.json(movie);
-    } catch (error) {
-      next(error);
-    }
-  }
-);
-
 router.delete(
-  "/movie/:id",
+  "/:id",
   validatorHandler(getByIdSchema, "params"),
   async (req, res, next) => {
     try {

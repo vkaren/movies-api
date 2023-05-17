@@ -13,9 +13,9 @@ const MovieSchema = {
     type: DataTypes.STRING,
     unique: true,
   },
-  genre: {
+  genres: {
     allowNull: false,
-    type: DataTypes.ARRAY,
+    type: DataTypes.ARRAY(DataTypes.STRING),
   },
   year: {
     allowNull: false,
@@ -31,7 +31,7 @@ const MovieSchema = {
   },
 };
 
-class Movies extends Model {
+class Movie extends Model {
   static associate() {
     // models
   }
@@ -40,10 +40,10 @@ class Movies extends Model {
     return {
       sequelize,
       tableName: MOVIE_TABLE,
-      modelName: "Movies",
+      modelName: "Movie",
       timestamps: false,
     };
   }
 }
 
-module.exports = { MOVIE_TABLE, MovieSchema, Movies };
+module.exports = { MOVIE_TABLE, MovieSchema, Movie };
