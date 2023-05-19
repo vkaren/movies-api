@@ -46,6 +46,11 @@ class GenresService {
           through: {
             attributes: [],
           },
+          include: {
+            model: models.ReleaseDate,
+            as: "release_date",
+            attributes: ["year"],
+          },
         },
       ],
     });

@@ -12,26 +12,25 @@ class MoviesService {
   }
 
   async create({ title, genres, year, ranking = 0, poster = "" }) {
-    const [yearId] = await models.Year.findOrCreate({
-      where: { year },
-      defaults: {
-        year,
-      },
-    });
+    try {
+      const [yearId] = await models.ReleaseDate.findOrCreate({
+        where: { year },
+        defaults: {
+          year,
+        },
+      });
 
-    const movieData = {
-      title,
-      genres,
-      ranking,
-      poster,
-      year,
-      yearId: yearId.dataValues.id,
-    };
+      const movieData = {
+        title,
+        genres,
+        ranking,
+        poster,
+        releaseDateId: yearId.dataValues.id,
+      };
 
-    const movie = await models.Movie.create(movieData);
+      const movie = await models.Movie.create(movieData);
 
-    genres.forEach(async (genre) => {
-      try {
+      genres.forEach(async (genre) => {
         const [genreId] = await models.Genre.findOrCreate({
           where: { name: genre },
           defaults: {
@@ -43,12 +42,12 @@ class MoviesService {
           genreId: genreId.dataValues.id,
           movieId: movie.id,
         });
-      } catch (err) {
-        console.log(err);
-      }
-    });
+      });
 
-    return movie;
+      return movie;
+    } catch (err) {
+      console.log(err);
+    }
   }
 
   async update(id, changes) {
@@ -56,12 +55,23 @@ class MoviesService {
     if (!movie) {
       throw boom.notFound("movie not found");
     }
-    const rta = await models.Movie.update(changes);
+    const rta = await models.Movie.update(changes, { where: { id } });
     return rta;
   }
 
-  async find() {
-    const res = await models.Movie.findAll();
+  async find(pagination) {
+    const res = await models.Movie.findAll({
+      include: [
+        {
+          model: models.ReleaseDate,
+          as: "release_date",
+          attributes: ["year"],
+        },
+      ],
+      limit: pagination.limit,
+      offset: pagination.offset,
+    });
+    console.log(res);
     return res;
   }
 
@@ -77,27 +87,30 @@ class MoviesService {
     return movie;
   }
 
-  async filter({ attribute, value }, { limit = 20, offset = 0 }) {
+  async filter(data, pagination) {
     const options = {
-      where: {
-        [attribute]: value,
-      },
-      limit,
-      offset,
+      where: data,
+      limit: pagination.limit,
+      offset: pagination.offset,
     };
     const movies = await models.Movie.findAll(options);
     return movies;
   }
 
   async delete(id) {
-    const movie = await models.Movie.findByPk(id);
-    let movieDeleted;
-    if (!movie) {
-      throw boom.notFound("movie not found");
+    try {
+      const movie = await models.Movie.findByPk(id);
+      let movieDeleted;
+      if (!movie) {
+        throw boom.notFound("movie not found");
+      }
+      movieDeleted = movie;
+      const a = await movie.destroy();
+      console.log(movieDeleted, a);
+      return movieDeleted;
+    } catch (err) {
+      console.log(err);
     }
-    movieDeleted = movie;
-    await movie.destroy();
-    return movieDeleted;
   }
 }
 

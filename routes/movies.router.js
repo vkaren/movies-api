@@ -8,14 +8,15 @@ const {
   updateMovieSchema,
   getByIdSchema,
   getByTitleSchema,
-  getByGenreSchema,
-  getByYearSchema,
-  getByRankingSchema,
+  filterBy,
 } = require("../schemas/movies.schema");
+const { Op } = require("sequelize");
 
 router.get("/", async (req, res, next) => {
   try {
-    const movies = await service.find();
+    const { limit, offset } = req.query;
+    const pagination = { limit, offset };
+    const movies = await service.find(pagination);
     res.json(movies);
   } catch (error) {
     next(error);
@@ -66,59 +67,42 @@ router.get(
   }
 );
 
-// router.get(
-//   "/genre/:genre",
-//   validatorHandler(getByGenreSchema, "params"),
-//   async (req, res, next) => {
-//     try {
-//       const { genre } = req.params;
-//       const movies = await service.filter(
-//         { attribute: "genre", value: genre },
-//         req.query
-//       );
-//       res.json(movies);
-//     } catch (error) {
-//       next(error);
-//     }
-//   }
-// );
+router.get(
+  "/filter",
+  validatorHandler(filterBy, "query"),
+  async (req, res, next) => {
+    try {
+      const {
+        genre = null,
+        year = null,
+        ranking = null,
+        limit,
+        offset,
+      } = req.query;
+      const pagination = { limit, offset };
+      const data = {};
 
-// router.get(
-//   "/year/:year",
-//   validatorHandler(getByYearSchema, "params"),
-//   async (req, res, next) => {
-//     try {
-//       const { year } = req.params;
-//       const movies = await service.filter(
-//         { attribute: "year", value: year },
-//         req.query
-//       );
-//       res.json(movies);
-//     } catch (error) {
-//       next(error);
-//     }
-//   }
-// );
+      if (genre) {
+        data.genres = {
+          [Op.contains]: [genre],
+        };
+      }
 
-// router.get(
-//   "/ranking/:ranking",
-//   validatorHandler(getByRankingSchema, "params"),
-//   async (req, res, next) => {
-//     try {
-//       const { ranking } = req.params;
-//       const movies = await service.filter(
-//         {
-//           attribute: "ranking",
-//           value: ranking,
-//         },
-//         req.query
-//       );
-//       res.json(movies);
-//     } catch (error) {
-//       next(error);
-//     }
-//   }
-// );
+      if (year) {
+        data.year = year;
+      }
+
+      if (ranking) {
+        data.ranking = ranking;
+      }
+
+      const movies = await service.filter(data, pagination);
+      res.json(movies);
+    } catch (error) {
+      next(error);
+    }
+  }
+);
 
 router.delete(
   "/:id",

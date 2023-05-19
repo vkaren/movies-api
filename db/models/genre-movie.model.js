@@ -21,7 +21,7 @@ const GenreMovieSchema = {
       key: "id",
     },
     onUpdate: "CASCADE",
-    onDelete: "SET NULL",
+    onDelete: "CASCADE",
   },
   movieId: {
     field: "movie_id",
@@ -32,7 +32,7 @@ const GenreMovieSchema = {
       key: "id",
     },
     onUpdate: "CASCADE",
-    onDelete: "SET NULL",
+    onDelete: "CASCADE",
   },
 };
 

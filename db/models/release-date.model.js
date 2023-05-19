@@ -1,7 +1,7 @@
 const { Model, DataTypes } = require("sequelize");
-const YEAR_TABLE = "years";
+const RELEASE_DATE_TABLE = "release_date";
 
-const YearSchema = {
+const ReleaseDateSchema = {
   id: {
     allowNull: false,
     autoIncrement: true,
@@ -14,22 +14,22 @@ const YearSchema = {
   },
 };
 
-class Year extends Model {
+class ReleaseDate extends Model {
   static associate(models) {
     this.hasMany(models.Movie, {
       as: "movies",
-      foreignKey: "yearId",
+      foreignKey: "releaseDateId",
     });
   }
 
   static config(sequelize) {
     return {
       sequelize,
-      tableName: YEAR_TABLE,
-      modelName: "Year",
+      tableName: RELEASE_DATE_TABLE,
+      modelName: "ReleaseDate",
       timestamps: false,
     };
   }
 }
 
-module.exports = { YEAR_TABLE, YearSchema, Year };
+module.exports = { RELEASE_DATE_TABLE, ReleaseDateSchema, ReleaseDate };

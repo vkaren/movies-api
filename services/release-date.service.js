@@ -3,7 +3,7 @@ const { models } = require("../libs/sequelize");
 
 const boom = require("@hapi/boom");
 
-class YearsService {
+class ReleaseDateService {
   constructor() {
     this.pool = pool;
     this.pool.on("error", (err) => console.error(err));
@@ -11,28 +11,28 @@ class YearsService {
 
   async create({ year }) {
     const data = { year };
-    const newYear = await models.Year.create(data);
+    const newYear = await models.ReleaseDate.create(data);
     return newYear;
   }
 
   async update(id, changes) {
-    const year = await models.Year.findByPk(id);
+    const year = await models.ReleaseDate.findByPk(id);
     if (!year) {
       throw boom.notFound("year not found");
     }
-    const rta = await models.Year.update(changes);
+    const rta = await models.ReleaseDate.update(changes);
     return rta;
   }
 
   async find() {
-    const res = await models.Year.findAll({
+    const res = await models.ReleaseDate.findAll({
       include: ["movies"],
     });
     return res;
   }
 
   async findByYear(yearParam) {
-    const year = await models.Year.findOne({
+    const year = await models.ReleaseDate.findOne({
       where: { year: yearParam },
       include: ["movies"],
     });
@@ -45,7 +45,7 @@ class YearsService {
   }
 
   async delete(id) {
-    const year = await models.Year.findByPk(id);
+    const year = await models.ReleaseDate.findByPk(id);
     let yearDeleted;
     if (!year) {
       throw boom.notFound("year not found");
@@ -56,4 +56,4 @@ class YearsService {
   }
 }
 
-module.exports = YearsService;
+module.exports = ReleaseDateService;

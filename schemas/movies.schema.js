@@ -3,10 +3,11 @@ const Joi = require("joi");
 const id = Joi.number().integer();
 const title = Joi.string();
 const genres = Joi.array();
+const genre = Joi.string();
 const year = Joi.number().integer().min(1895).max(2024);
 const ranking = Joi.number().integer();
 const poster = Joi.string().uri();
-const yearId = Joi.number().integer();
+// const yearId = Joi.number().integer();
 
 const addMovieSchema = Joi.object({
   title: title.required(),
@@ -14,7 +15,7 @@ const addMovieSchema = Joi.object({
   year: year.required(),
   ranking,
   poster,
-  yearId,
+  // yearId,
 });
 
 const updateMovieSchema = Joi.object({
@@ -29,20 +30,14 @@ const getByIdSchema = Joi.object({
   id: id.required(),
 });
 
+const filterBy = Joi.object({
+  genre,
+  year,
+  ranking,
+});
+
 const getByTitleSchema = Joi.object({
   title: title.required(),
-});
-
-const getByGenreSchema = Joi.object({
-  genres: genres.required(),
-});
-
-const getByYearSchema = Joi.object({
-  year: year.required(),
-});
-
-const getByRankingSchema = Joi.object({
-  ranking: ranking.required(),
 });
 
 module.exports = {
@@ -50,7 +45,5 @@ module.exports = {
   updateMovieSchema,
   getByIdSchema,
   getByTitleSchema,
-  getByGenreSchema,
-  getByYearSchema,
-  getByRankingSchema,
+  filterBy,
 };

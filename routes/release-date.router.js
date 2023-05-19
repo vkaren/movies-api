@@ -1,13 +1,13 @@
-const YearsService = require("../services/years.service");
+const ReleaseDateService = require("../services/release-date.service");
 const express = require("express");
 const router = express.Router();
-const service = new YearsService();
+const service = new ReleaseDateService();
 const validatorHandler = require("../middlewares/validator.handler");
 const {
-  yearSchema,
-  updateYearSchema,
+  releaseDateSchema,
+  updateReleaseDateSchema,
   getByIdSchema,
-} = require("../schemas/years.schema");
+} = require("../schemas/release-date.schema");
 
 router.get("/", async (req, res, next) => {
   try {
@@ -20,7 +20,7 @@ router.get("/", async (req, res, next) => {
 
 router.post(
   "/",
-  validatorHandler(yearSchema, "body"),
+  validatorHandler(releaseDateSchema, "body"),
   async (req, res, next) => {
     try {
       const body = req.body;
@@ -35,7 +35,7 @@ router.post(
 router.patch(
   "/:id",
   validatorHandler(getByIdSchema, "params"),
-  validatorHandler(updateYearSchema, "body"),
+  validatorHandler(updateReleaseDateSchema, "body"),
   async (req, res, next) => {
     try {
       const { id } = req.params;
@@ -50,7 +50,7 @@ router.patch(
 
 router.get(
   "/:year",
-  validatorHandler(yearSchema, "params"),
+  validatorHandler(releaseDateSchema, "params"),
   async (req, res, next) => {
     try {
       const { year } = req.params;
