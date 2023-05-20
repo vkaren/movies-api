@@ -2,7 +2,7 @@ const express = require("express");
 
 const moviesRouter = require("./movies.router");
 const genresRouter = require("./genre.router");
-const yearRouter = require("./release-date.router");
+const yearRouter = require("./year.router");
 
 function routerApi(app) {
   const router = express.Router();

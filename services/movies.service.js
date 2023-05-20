@@ -12,66 +12,113 @@ class MoviesService {
   }
 
   async create({ title, genres, year, ranking = 0, poster = "" }) {
-    try {
-      const [yearId] = await models.ReleaseDate.findOrCreate({
+    const isMovieCreated = await models.Movie.findOne({
+      where: {
+        title,
+      },
+    });
+
+    if (isMovieCreated) {
+      throw boom.notFound(`${title} movie already exists`);
+    }
+
+    // find or create the year and get the id
+    const [yearId] = await models.Year.findOrCreate({
+      where: { year },
+      defaults: {
+        year,
+      },
+    });
+
+    const movieData = {
+      title,
+      genres,
+      ranking,
+      poster,
+      year,
+      yearId: yearId.dataValues.id,
+    };
+
+    const movie = await models.Movie.create(movieData);
+
+    // find or create all the genres, get the id and add the movie created to the genre
+    genres.forEach(async (genreName) => {
+      const [genre] = await models.Genre.findOrCreate({
+        where: { name: genreName },
+        defaults: {
+          name: genreName,
+        },
+      });
+
+      await genresService.addMovie({
+        genreId: genre.dataValues.id,
+        movieId: movie.id,
+      });
+    });
+
+    return movie;
+  }
+
+  async update(id, { year, genres, ...params }) {
+    const movie = await models.Movie.findByPk(id);
+    if (!movie) {
+      throw boom.notFound("movie not found");
+    }
+
+    const changes = { ...params };
+
+    if (year && year !== movie.dataValues.year) {
+      const [yearId] = await models.Year.findOrCreate({
         where: { year },
         defaults: {
           year,
         },
       });
+      changes.year = year;
+      changes.yearId = yearId.dataValues.id;
+    }
 
-      const movieData = {
-        title,
-        genres,
-        ranking,
-        poster,
-        releaseDateId: yearId.dataValues.id,
-      };
+    const isGenresChange =
+      genres.length !== movie.dataValues.genres.length ||
+      genres.some((genre, i) => genre !== movie.dataValues.genres[i]);
 
-      const movie = await models.Movie.create(movieData);
+    if (genres && isGenresChange) {
+      const genreMovie = await models.GenreMovie.findAll({
+        where: { movieId: movie.dataValues.id },
+      });
 
-      genres.forEach(async (genre) => {
-        const [genreId] = await models.Genre.findOrCreate({
-          where: { name: genre },
+      genreMovie.forEach((genreM) => genreM.destroy());
+
+      genres.forEach(async (genreName) => {
+        const [genre] = await models.Genre.findOrCreate({
+          where: { name: genreName },
           defaults: {
-            name: genre,
+            name: genreName,
           },
         });
 
         await genresService.addMovie({
-          genreId: genreId.dataValues.id,
+          genreId: genre.dataValues.id,
           movieId: movie.id,
         });
       });
 
-      return movie;
-    } catch (err) {
-      console.log(err);
+      changes.genres = genres;
     }
-  }
 
-  async update(id, changes) {
-    const movie = await models.Movie.findByPk(id);
-    if (!movie) {
-      throw boom.notFound("movie not found");
-    }
-    const rta = await models.Movie.update(changes, { where: { id } });
+    const rta = await models.Movie.update(changes, {
+      where: { id },
+      returning: true,
+    });
+
     return rta;
   }
 
   async find(pagination) {
     const res = await models.Movie.findAll({
-      include: [
-        {
-          model: models.ReleaseDate,
-          as: "release_date",
-          attributes: ["year"],
-        },
-      ],
       limit: pagination.limit,
       offset: pagination.offset,
     });
-    console.log(res);
     return res;
   }
 
@@ -98,19 +145,14 @@ class MoviesService {
   }
 
   async delete(id) {
-    try {
-      const movie = await models.Movie.findByPk(id);
-      let movieDeleted;
-      if (!movie) {
-        throw boom.notFound("movie not found");
-      }
-      movieDeleted = movie;
-      const a = await movie.destroy();
-      console.log(movieDeleted, a);
-      return movieDeleted;
-    } catch (err) {
-      console.log(err);
+    const movie = await models.Movie.findByPk(id);
+    let movieDeleted;
+    if (!movie) {
+      throw boom.notFound("movie not found");
     }
+    movieDeleted = movie;
+    await movie.destroy();
+    return movieDeleted;
   }
 }
 

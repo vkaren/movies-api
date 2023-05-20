@@ -11,22 +11,23 @@ class GenresService {
 
   async create({ name }) {
     const data = { name };
+    const isGenreCreated = await this.findByName(name);
+
+    if (isGenreCreated) {
+      throw boom.notFound(`${name} genre already exists`);
+    }
     const genre = await models.Genre.create(data);
     return genre;
   }
 
-  async update(id, changes) {
-    const genre = await models.Genre.findByPk(id);
-    if (!genre) {
-      throw boom.notFound("genre not found");
-    }
-    const rta = await models.Genre.update(changes);
-    return rta;
-  }
-
   async addMovie({ genreId, movieId }) {
     const data = { genreId, movieId };
-    const genre = models.Genre.findByPk(genreId);
+    const movie = await models.Movie.findByPk(movieId);
+    const genre = await models.Genre.findByPk(genreId);
+
+    if (!movie) {
+      throw boom.notFound("movie not found");
+    }
 
     if (!genre) {
       throw boom.notFound("genre not found");
@@ -46,11 +47,6 @@ class GenresService {
           through: {
             attributes: [],
           },
-          include: {
-            model: models.ReleaseDate,
-            as: "release_date",
-            attributes: ["year"],
-          },
         },
       ],
     });
@@ -60,7 +56,15 @@ class GenresService {
   async findByName(name) {
     const genre = await models.Genre.findOne({
       where: { name },
-      include: ["movies"],
+      include: [
+        {
+          model: models.Movie,
+          as: "movies",
+          through: {
+            attributes: [],
+          },
+        },
+      ],
     });
 
     if (!genre) {
@@ -68,17 +72,6 @@ class GenresService {
     }
 
     return genre;
-  }
-
-  async delete(id) {
-    const genre = await models.Genre.findByPk(id);
-    let genreDeleted;
-    if (!genre) {
-      throw boom.notFound("genre not found");
-    }
-    genreDeleted = genre;
-    await genre.destroy();
-    return genreDeleted;
   }
 }
 

@@ -1,5 +1,5 @@
 const { Model, DataTypes } = require("sequelize");
-const { RELEASE_DATE_TABLE } = require("./release-date.model");
+const { YEAR_TABLE } = require("./year.model");
 
 const MOVIE_TABLE = "movies";
 
@@ -15,6 +15,10 @@ const MovieSchema = {
     type: DataTypes.STRING,
     unique: true,
   },
+  year: {
+    allowNull: false,
+    type: DataTypes.INTEGER,
+  },
   genres: {
     allowNull: false,
     type: DataTypes.ARRAY(DataTypes.STRING),
@@ -27,12 +31,12 @@ const MovieSchema = {
     allowNull: false,
     type: DataTypes.STRING,
   },
-  releaseDateId: {
-    field: "release_date_id",
+  yearId: {
+    field: "year_id",
     allowNull: false,
     type: DataTypes.INTEGER,
     references: {
-      model: RELEASE_DATE_TABLE,
+      model: YEAR_TABLE,
       key: "id",
     },
     onUpdate: "CASCADE",
@@ -41,9 +45,7 @@ const MovieSchema = {
 };
 
 class Movie extends Model {
-  static associate(models) {
-    this.belongsTo(models.ReleaseDate, { as: "release_date" });
-  }
+  static associate() {}
 
   static config(sequelize) {
     return {

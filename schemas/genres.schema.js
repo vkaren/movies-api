@@ -7,16 +7,12 @@ const genreSchema = Joi.object({
   name: name.required(),
 });
 
-const updateGenreSchema = Joi.object({
-  name,
-});
-
-const getByIdSchema = Joi.object({
-  id: id.required(),
+const getByIdsSchema = Joi.object({
+  genreId: id.required(),
+  movieId: id.required(),
 });
 
 module.exports = {
   genreSchema,
-  updateGenreSchema,
-  getByIdSchema,
+  getByIdsSchema,
 };

@@ -1,13 +1,13 @@
 const Joi = require("joi");
 
 const id = Joi.number().integer();
-const year = Joi.number().integer();
+const year = Joi.number().integer().min(1895).max(2024);
 
-const releaseDateSchema = Joi.object({
+const yearSchema = Joi.object({
   year: year.required(),
 });
 
-const updateReleaseDateSchema = Joi.object({
+const updateYearSchema = Joi.object({
   year,
 });
 
@@ -16,7 +16,7 @@ const getByIdSchema = Joi.object({
 });
 
 module.exports = {
-  releaseDateSchema,
-  updateReleaseDateSchema,
+  yearSchema,
+  updateYearSchema,
   getByIdSchema,
 };
