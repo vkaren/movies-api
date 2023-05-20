@@ -115,11 +115,15 @@ class MoviesService {
   }
 
   async find(pagination) {
-    const res = await models.Movie.findAll({
-      limit: pagination.limit,
-      offset: pagination.offset,
-    });
-    return res;
+    try {
+      const res = await models.Movie.findAll({
+        limit: pagination.limit,
+        offset: pagination.offset,
+      });
+      return res;
+    } catch (err) {
+      console.log(err);
+    }
   }
 
   async findByTitle(title) {
