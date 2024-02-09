@@ -1,6 +1,6 @@
-const MoviesService = require("../services/movies.service");
 const express = require("express");
 const router = express.Router();
+const MoviesService = require("../services/movies.service");
 const service = new MoviesService();
 const validatorHandler = require("../middlewares/validator.handler");
 const {
@@ -10,57 +10,23 @@ const {
   getByTitleSchema,
   filterBy,
 } = require("../schemas/movies.schema");
-const { Op } = require("sequelize");
 
 router.get("/", async (req, res, next) => {
   try {
-    const { limit, offset } = req.query;
-    const pagination = { limit, offset };
-    const movies = await service.find(pagination);
-    res.json(movies);
+    const movies = await service.find(req.query);
+    res.status(200).json(movies);
   } catch (error) {
     next(error);
   }
 });
-
-router.post(
-  "/",
-  validatorHandler(addMovieSchema, "body"),
-  async (req, res, next) => {
-    try {
-      const body = req.body;
-      const newMovie = await service.create(body);
-      res.json(newMovie);
-    } catch (error) {
-      next(error);
-    }
-  }
-);
-
-router.patch(
-  "/:id",
-  validatorHandler(getByIdSchema, "params"),
-  validatorHandler(updateMovieSchema, "body"),
-  async (req, res, next) => {
-    try {
-      const { id } = req.params;
-      const body = req.body;
-      const movie = await service.update(id, body);
-      res.json(movie);
-    } catch (error) {
-      next(error);
-    }
-  }
-);
 
 router.get(
   "/title/:title",
   validatorHandler(getByTitleSchema, "params"),
   async (req, res, next) => {
     try {
-      const { title } = req.params;
-      const movie = await service.findByTitle(title);
-      res.json(movie);
+      const movie = await service.findByTitle(req.params);
+      res.status(200).json(movie);
     } catch (error) {
       next(error);
     }
@@ -72,32 +38,35 @@ router.get(
   validatorHandler(filterBy, "query"),
   async (req, res, next) => {
     try {
-      const {
-        genre = null,
-        year = null,
-        ranking = null,
-        limit,
-        offset,
-      } = req.query;
-      const pagination = { limit, offset };
-      const data = {};
+      const movies = await service.filter(req.query);
+      res.status(200).json(movies);
+    } catch (error) {
+      next(error);
+    }
+  }
+);
 
-      if (genre) {
-        data.genres = {
-          [Op.contains]: [genre],
-        };
-      }
+router.post(
+  "/",
+  validatorHandler(addMovieSchema, "body", true),
+  async (req, res, next) => {
+    try {
+      const newMovie = await service.create(req.body);
+      res.status(201).json(newMovie);
+    } catch (error) {
+      next(error);
+    }
+  }
+);
 
-      if (year) {
-        data.year = year;
-      }
-
-      if (ranking) {
-        data.ranking = ranking;
-      }
-
-      const movies = await service.filter(data, pagination);
-      res.json(movies);
+router.patch(
+  "/:id",
+  validatorHandler(getByIdSchema, "params"),
+  validatorHandler(updateMovieSchema, "body", true),
+  async (req, res, next) => {
+    try {
+      const movie = await service.update({ ...req.params, ...req.body });
+      res.status(200).json(movie);
     } catch (error) {
       next(error);
     }
@@ -109,12 +78,8 @@ router.delete(
   validatorHandler(getByIdSchema, "params"),
   async (req, res, next) => {
     try {
-      const { id } = req.params;
-      const movie = await service.delete(id);
-      res.json({
-        message: "deleted",
-        movie,
-      });
+      const deletedMovie = await service.delete(req.params);
+      res.status(200).json(deletedMovie);
     } catch (error) {
       next(error);
     }

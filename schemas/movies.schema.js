@@ -1,12 +1,25 @@
 const Joi = require("joi");
 
+const GenresService = require("../services/genres.service");
+const genreService = new GenresService();
+
+const checkValidGenres = async (data) => {
+  const validGenres = (await genreService.find()).map((genre) => genre.name);
+
+  data.forEach((genre) => {
+    if (!validGenres.includes(genre)) {
+      throw new Error(`${genre} genre doesn't exist`);
+    }
+  });
+};
+
 const id = Joi.number().integer();
 const title = Joi.string();
-const genres = Joi.array();
+const genre = Joi.string();
+const genres = Joi.array().items(genre).external(checkValidGenres);
 const ranking = Joi.number().integer();
 const poster = Joi.string().uri();
 const year = Joi.number().integer().min(1895).max(2024);
-const genre = Joi.string();
 
 const addMovieSchema = Joi.object({
   title: title.required(),

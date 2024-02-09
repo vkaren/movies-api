@@ -1,9 +1,9 @@
-const pool = require("../libs/postgres.pool");
+const { Op } = require("sequelize");
 const { models } = require("../libs/sequelize");
-const service = require("./genres.service");
-const genresService = new service();
-
+const pool = require("../libs/postgres.pool");
 const boom = require("@hapi/boom");
+const service = require("./genres.service");
+const GenresService = new service();
 
 class MoviesService {
   constructor() {
@@ -19,16 +19,8 @@ class MoviesService {
     });
 
     if (isMovieCreated) {
-      throw boom.notFound(`${title} movie already exists`);
+      throw boom.conflict(`${title} movie already exists`);
     }
-
-    // find or create the year and get the id
-    const [yearId] = await models.Year.findOrCreate({
-      where: { year },
-      defaults: {
-        year,
-      },
-    });
 
     const movieData = {
       title,
@@ -36,72 +28,57 @@ class MoviesService {
       ranking,
       poster,
       year,
-      yearId: yearId.dataValues.id,
     };
 
     const movie = await models.Movie.create(movieData);
 
-    // find or create all the genres, get the id and add the movie created to the genre
-    genres.forEach(async (genreName) => {
-      const [genre] = await models.Genre.findOrCreate({
-        where: { name: genreName },
-        defaults: {
-          name: genreName,
-        },
-      });
-
-      await genresService.addMovie({
-        genreId: genre.dataValues.id,
-        movieId: movie.id,
-      });
-    });
+    await this.addMovieToGenreList({ movie, genres });
 
     return movie;
   }
 
-  async update(id, { year, genres, ...params }) {
-    const movie = await models.Movie.findByPk(id);
-    if (!movie) {
-      throw boom.notFound("movie not found");
-    }
-
-    const changes = { ...params };
-
-    if (year && year !== movie.dataValues.year) {
-      const [yearId] = await models.Year.findOrCreate({
-        where: { year },
+  async addMovieToGenreList({ movie, genres }) {
+    genres.forEach(async (name) => {
+      const genre = await models.Genre.findOne({
+        where: { name },
         defaults: {
-          year,
+          name,
         },
       });
-      changes.year = year;
-      changes.yearId = yearId.dataValues.id;
-    }
 
-    const isGenresChange =
-      genres.length !== movie.dataValues.genres.length ||
-      genres.some((genre, i) => genre !== movie.dataValues.genres[i]);
-
-    if (genres && isGenresChange) {
-      const genreMovie = await models.GenreMovie.findAll({
-        where: { movieId: movie.dataValues.id },
-      });
-
-      genreMovie.forEach((genreM) => genreM.destroy());
-
-      genres.forEach(async (genreName) => {
-        const [genre] = await models.Genre.findOrCreate({
-          where: { name: genreName },
-          defaults: {
-            name: genreName,
-          },
-        });
-
-        await genresService.addMovie({
+      if (genre) {
+        await GenresService.addMovieToGenre({
           genreId: genre.dataValues.id,
           movieId: movie.id,
         });
+      }
+    });
+  }
+
+  async update({ id, year, genres, ...params }) {
+    const movie = await models.Movie.findByPk(id);
+
+    if (!movie) {
+      throw boom.notFound(`This movie with ID number ${id} doesn't exist`);
+    }
+
+    const changes = { ...params };
+    const haveGenresChanged =
+      genres.length !== movie.dataValues.genres.length ||
+      genres.some((genre, i) => genre !== movie.dataValues.genres[i]);
+
+    if (year && year !== movie.dataValues.year) {
+      changes.year = year;
+    }
+
+    if (genres && haveGenresChanged) {
+      const genreMovieTables = await models.GenreMovie.findAll({
+        where: { movieId: movie.dataValues.id },
       });
+
+      genreMovieTables.forEach((genreMovie) => genreMovie.destroy());
+
+      await this.addMovieToGenreList({ movie, genres });
 
       changes.genres = genres;
     }
@@ -114,49 +91,63 @@ class MoviesService {
     return rta;
   }
 
-  async find(pagination) {
-    try {
-      const res = await models.Movie.findAll({
-        limit: pagination.limit,
-        offset: pagination.offset,
-      });
-      return res;
-    } catch (err) {
-      console.log(err);
-    }
+  async find({ limit, offset }) {
+    const res = await models.Movie.findAll({
+      limit,
+      offset,
+    });
+    return res;
   }
 
-  async findByTitle(title) {
+  async findByTitle({ title }) {
     const movie = await models.Movie.findOne({
       where: {
         title,
       },
     });
+
     if (!movie) {
-      throw boom.notFound("movie not found");
+      throw boom.notFound(`${title} movie doesn't exist`);
     }
+
     return movie;
   }
 
-  async filter(data, pagination) {
-    const options = {
-      where: data,
-      limit: pagination.limit,
-      offset: pagination.offset,
+  async filter({ genre = null, year = null, ranking = null, limit, offset }) {
+    const query = {
+      where: {},
+      limit,
+      offset,
     };
-    const movies = await models.Movie.findAll(options);
+
+    if (genre) {
+      query.where.genres = {
+        [Op.contains]: [genre],
+      };
+    }
+
+    if (year) {
+      query.where.year = year;
+    }
+
+    if (ranking) {
+      query.where.ranking = ranking;
+    }
+
+    const movies = await models.Movie.findAll(query);
+
     return movies;
   }
 
-  async delete(id) {
+  async delete({ id }) {
     const movie = await models.Movie.findByPk(id);
-    let movieDeleted;
+
     if (!movie) {
-      throw boom.notFound("movie not found");
+      throw boom.notFound(`This movie with ID number ${id} doesn't exist`);
     }
-    movieDeleted = movie;
     await movie.destroy();
-    return movieDeleted;
+
+    return { deletedMovie: id };
   }
 }
 
