@@ -1,7 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const app = express();
-const port = 3000;
+const { port } = require("./config");
 const routerApi = require("./routes");
 const {
   logErrors,
@@ -12,16 +12,12 @@ const {
 app.use(express.json());
 app.use(cors());
 
-app.get("/", (req, res) => {
-  res.send("Hola mi server en Express");
+app.listen(port, () => {
+  console.log(`Api listening on port ${port}`);
 });
 
-app.listen(port, () => {
-  console.log("My port: " + port);
-});
+routerApi(app);
 
 app.use(logErrors);
 app.use(boomErrorHandler);
 app.use(errorHandler);
-
-routerApi(app);

@@ -1,5 +1,4 @@
 const { Model, DataTypes } = require("sequelize");
-const { YEAR_TABLE } = require("./year.model");
 
 const MOVIE_TABLE = "movies";
 
@@ -24,23 +23,12 @@ const MovieSchema = {
     type: DataTypes.ARRAY(DataTypes.STRING),
   },
   ranking: {
-    allowNull: false,
+    allowNull: true,
     type: DataTypes.INTEGER,
   },
   poster: {
-    allowNull: false,
+    allowNull: true,
     type: DataTypes.STRING,
-  },
-  yearId: {
-    field: "year_id",
-    allowNull: false,
-    type: DataTypes.INTEGER,
-    references: {
-      model: YEAR_TABLE,
-      key: "id",
-    },
-    onUpdate: "CASCADE",
-    onDelete: "SET NULL",
   },
 };
 
