@@ -13,10 +13,27 @@ const checkValidGenres = async (data) => {
   });
 };
 
+const custom = Joi.extend({
+  type: "array",
+  base: Joi.array(),
+  coerce: {
+    from: "string",
+    method(value, helpers) {
+      if (typeof value === "string") {
+        try {
+          return { value: JSON.parse(value) };
+        } catch (err) {}
+      }
+
+      return;
+    },
+  },
+});
+
 const id = Joi.number().integer();
 const title = Joi.string();
 const genre = Joi.string();
-const genres = Joi.array().items(genre).external(checkValidGenres);
+const genres = custom.array().items(genre).external(checkValidGenres);
 const ranking = Joi.number().integer();
 const poster = Joi.string().uri();
 const year = Joi.number().integer().min(1895).max(2024);

@@ -1,5 +1,6 @@
 const { Op } = require("sequelize");
 const { models } = require("../libs/sequelize");
+const { getFileUrl } = require("../libs/multer");
 const pool = require("../libs/postgres.pool");
 const boom = require("@hapi/boom");
 const service = require("./genres.service");
@@ -24,15 +25,19 @@ class MoviesService {
 
     const movieData = {
       title,
-      genres,
+      genres: this.checkGenresJson(genres),
       ranking,
       poster,
       year,
     };
 
+    if (poster) {
+      movieData.poster = getFileUrl(poster);
+    }
+
     const movie = await models.Movie.create(movieData);
 
-    await this.addMovieToGenreList({ movie, genres });
+    await this.addMovieToGenreList({ movie, genres: movieData.genres });
 
     return movie;
   }
@@ -55,7 +60,7 @@ class MoviesService {
     });
   }
 
-  async update({ id, year, genres, ...params }) {
+  async update({ id, year, genres, poster, ...params }) {
     const movie = await models.Movie.findByPk(id);
 
     if (!movie) {
@@ -63,24 +68,32 @@ class MoviesService {
     }
 
     const changes = { ...params };
-    const haveGenresChanged =
-      genres.length !== movie.dataValues.genres.length ||
-      genres.some((genre, i) => genre !== movie.dataValues.genres[i]);
 
     if (year && year !== movie.dataValues.year) {
       changes.year = year;
     }
 
-    if (genres && haveGenresChanged) {
-      const genreMovieTables = await models.GenreMovie.findAll({
-        where: { movieId: movie.dataValues.id },
-      });
+    if (genres) {
+      const genresList = this.checkGenresJson(genres);
+      const haveGenresChanged =
+        genresList.length !== movie.dataValues.genres.length ||
+        genresList.some((genre, i) => genre !== movie.dataValues.genres[i]);
 
-      genreMovieTables.forEach((genreMovie) => genreMovie.destroy());
+      if (haveGenresChanged) {
+        const genreMovieTables = await models.GenreMovie.findAll({
+          where: { movieId: movie.dataValues.id },
+        });
 
-      await this.addMovieToGenreList({ movie, genres });
+        genreMovieTables.forEach((genreMovie) => genreMovie.destroy());
 
-      changes.genres = genres;
+        await this.addMovieToGenreList({ movie, genres: genresList });
+
+        changes.genres = genresList;
+      }
+    }
+
+    if (poster) {
+      changes.poster = getFileUrl(poster);
     }
 
     const rta = await models.Movie.update(changes, {
@@ -148,6 +161,14 @@ class MoviesService {
     await movie.destroy();
 
     return { deletedMovie: id };
+  }
+
+  checkGenresJson(genres) {
+    if (typeof genres === "string") {
+      genres = JSON.parse(genres);
+    }
+
+    return genres;
   }
 }
 

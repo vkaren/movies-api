@@ -7,17 +7,21 @@ const {
   logErrors,
   errorHandler,
   boomErrorHandler,
+  removeFileOnAuthErrorHandler,
 } = require("./middlewares/error.handler");
 
-app.use(express.json());
 app.use(cors());
-
-app.listen(port, () => {
-  console.log(`Api listening on port ${port}`);
-});
+app.use(express.json());
 
 routerApi(app);
 
 app.use(logErrors);
+app.use(removeFileOnAuthErrorHandler);
 app.use(boomErrorHandler);
 app.use(errorHandler);
+
+app.use(express.static("public"));
+
+app.listen(port, () => {
+  console.log(`Api listening on port ${port}`);
+});

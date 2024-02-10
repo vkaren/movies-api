@@ -15,7 +15,7 @@ class GenresService {
     });
 
     if (isGenreCreated) {
-      throw boom.notFound(`${name} genre already exists`);
+      throw boom.conflict(`${name} genre already exists`);
     }
     const genre = await models.Genre.create({ name });
     return genre;

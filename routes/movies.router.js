@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const MoviesService = require("../services/movies.service");
 const service = new MoviesService();
+const { upload } = require("../libs/multer");
 const validatorHandler = require("../middlewares/validator.handler");
 const {
   addMovieSchema,
@@ -48,10 +49,14 @@ router.get(
 
 router.post(
   "/",
+  upload.single("poster"),
   validatorHandler(addMovieSchema, "body", true),
   async (req, res, next) => {
     try {
-      const newMovie = await service.create(req.body);
+      const newMovie = await service.create({
+        ...req.body,
+        poster: req.file?.filename || null,
+      });
       res.status(201).json(newMovie);
     } catch (error) {
       next(error);
